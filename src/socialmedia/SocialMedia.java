@@ -187,8 +187,7 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	@Override
 	public int getNumberOfAccounts() {
-		// TODO Auto-generated method stub
-		return 0;
+		return currentUsers.size();
 	}
 
 	@Override
