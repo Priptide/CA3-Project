@@ -89,4 +89,9 @@ public class User {
         this.id = id;
     }
 
+    public String toString() {
+        // TODO: Add posts and endorsments
+        return "ID: " + id + "\nHandle: " + handle + "\nDescription: " + description + "\nPosts: \nEndorsments: ";
+    }
+
 }
