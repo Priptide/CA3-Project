@@ -19,6 +19,7 @@ public class User {
     public User(String handle, int id) {
         this.handle = handle;
         this.id = id;
+        this.description = "";
     }
 
     /**
