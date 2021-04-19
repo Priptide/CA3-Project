@@ -16,7 +16,11 @@ public class SocialMedia implements SocialMediaPlatform {
 	// Create an empty hashmap for our users
 	private Map<String, User> currentUsers;
 
+	private Map<Integer, Post> posts;
+
 	private int currentIndex;
+
+	private int idSetter;
 
 	public SocialMedia() {
 		this.currentUsers = new HashMap<>();
@@ -153,18 +157,18 @@ public class SocialMedia implements SocialMediaPlatform {
 		// Check this handle already exist
 		if (!checkForHandle(handle))
 			throw HandleNotRecognisedException("There is no user with this handle");
-		//checks message is valid
+		// checks message is valid
 		message = validateMessage(message);
-		//set id as the current sequential number
-		id = idSetter;
-		
-		//increment the sequential number
+		// set id as the current sequential number
+		int id = idSetter;
+
+		// increment the sequential number
 		idSetter++;
-		
+
 		Post userPost = new Post(handle, id, message);
-		
+
 		posts.put(id, userPost);
-		
+
 		return id;
 	}
 
@@ -177,17 +181,16 @@ public class SocialMedia implements SocialMediaPlatform {
 		// Check this handle already exist
 		if (!checkForId(id))
 			throw PostIDNotRecognisedException("There is no post with this ID");
-		
-		postId = idSetter;
-		
-		//increment the sequential number
+
+		int postId = idSetter;
+
+		// increment the sequential number
 		idSetter++;
-		
+
 		Post endorsedPost = posts.get(id);
 
+		Post userPost = new Post(handle, postId, "EP@" + endorsedPost.getHandle() + ": " + endorsedPost.getMessage());
 
-		Post userPost = new Post(handle, postId, "EP@" + endorsedPost.getHandle() + ": " endorsedPost.getMessage());
-		
 		posts.put(postId, userPost);
 		return postId;
 	}
@@ -292,15 +295,15 @@ public class SocialMedia implements SocialMediaPlatform {
 	}
 
 	/**
-	 * Checks a user with a given handle exsists
+	 * Checks if a user with a given handle exsists
 	 * 
 	 * @param handle
-	 * @return True if there is a user with that handle
+	 * @return True if there is a user with the given handle
 	 */
 	public boolean checkForHandle(String handle) {
 		return currentUsers.containsKey(handle);
 	}
-	
+
 	public String validateMessage(String message) throws InvalidPostException {
 		if (message.isEmpty())
 			throw InvalidPostException("The message can't be empty");
@@ -310,20 +313,15 @@ public class SocialMedia implements SocialMediaPlatform {
 
 		return message;
 	}
-		
-        public String checkForId(int id) throws PostIDNotRecognisedException {
-		Iterator<int, Post> postsMade = posts.entrySet().iterator();
-		while (postsMade.hasNext()) {
 
-			// Get next entry
-			Map.Entry<id, Post> post = (Map.Entry) postsMade.next();
-
-			// If this entry has the id we need then we will remove it and return
-			if (post.getValue().getId == id) {
-				throw PostIDNotRecognisedException("there is no post with this ID")
-				return;
-			}
+	/**
+	 * Checks if a post with a given id exsists
+	 * 
+	 * @param id
+	 * @return True if there is a post with the given id
+	 */
+	public boolean checkForId(int id) {
 		return posts.containsKey(id);
-		}
+	}
 
 }
