@@ -15,14 +15,13 @@ public class Post {
      * 
      * @param handle
      * @param id
-	 * @param message
+     * @param message
      */
     public Post(String handle, int id, string message) {
         this.handle = handle;
         this.id = id;
         this.message = message;
     }
-
 
     /**
      * Gets the posts message
@@ -33,7 +32,6 @@ public class Post {
         return message;
     }
 
-
     /**
      * Gets the posts handle
      * 
@@ -43,7 +41,6 @@ public class Post {
         return handle;
     }
 
-
     /**
      * Gets the posts current id
      * 
@@ -52,3 +49,4 @@ public class Post {
     public int getId() {
         return id;
     }
+}

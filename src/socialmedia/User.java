@@ -1,5 +1,7 @@
 package socialmedia;
 
+import java.util.ArrayList;
+
 public class User {
     // Variables
     private String handle;
@@ -7,6 +9,8 @@ public class User {
     private int id;
 
     private String description;
+
+    private List<Post> posts;
 
     // Constructors
 
@@ -20,6 +24,7 @@ public class User {
         this.handle = handle;
         this.id = id;
         this.description = "";
+        this.posts = new ArrayList<>();
     }
 
     /**
@@ -33,6 +38,7 @@ public class User {
         this.handle = handle;
         this.id = id;
         this.description = description;
+        this.posts = new ArrayList<>();
     }
 
     /**
@@ -87,6 +93,42 @@ public class User {
      */
     public void setId(int id) {
         this.id = id;
+    }
+
+    /**
+     * Gets all the posts of the user
+     * 
+     * @return Posts in a list
+     */
+    public List<Post> getPosts() {
+        return this.posts;
+    }
+
+    /**
+     * Sets the users posts as a list of posts
+     * 
+     * @param posts
+     */
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
+    }
+
+    /**
+     * Adds a new post to the users collection of posts
+     * 
+     * @param newPost
+     */
+    public void addPost(Post newPost) {
+        posts.add(newPost);
+    }
+
+    /**
+     * Remove a post by the user, this post must still exsist
+     * 
+     * @param oldPost
+     */
+    public void removePost(Post oldPost) {
+        posts.remove(oldPost);
     }
 
     public String toString() {

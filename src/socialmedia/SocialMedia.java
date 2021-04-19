@@ -165,9 +165,13 @@ public class SocialMedia implements SocialMediaPlatform {
 		// increment the sequential number
 		idSetter++;
 
+		// Create a new post
 		Post userPost = new Post(handle, id, message);
 
+		// Add it to the global list of posts
 		posts.put(id, userPost);
+
+		// Add it to the users posts
 
 		return id;
 	}
@@ -304,6 +308,13 @@ public class SocialMedia implements SocialMediaPlatform {
 		return currentUsers.containsKey(handle);
 	}
 
+	/**
+	 * Validates the message isn't empty or too many characters
+	 * 
+	 * @param message
+	 * @return The message if validated
+	 * @throws InvalidPostException When the message is invalid
+	 */
 	public String validateMessage(String message) throws InvalidPostException {
 		if (message.isEmpty())
 			throw InvalidPostException("The message can't be empty");
