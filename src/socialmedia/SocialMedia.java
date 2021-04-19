@@ -36,7 +36,7 @@ public class SocialMedia implements SocialMediaPlatform {
 		handle = validateHandle(handle);
 		// Check this handle doesn't already exist
 		if (checkForHandle(handle))
-			throw IllegalHandleException("A user with that handle already exists");
+			throw new IllegalHandleException("A user with that handle already exists");
 
 		// Now we get the users id as the next index in our hash map
 		id = currentIndex;
@@ -87,7 +87,7 @@ public class SocialMedia implements SocialMediaPlatform {
 		}
 
 		// If we find no users then we will throw an error
-		throw AccountIDNotRecognisedException("There is no user with this id");
+		throw new AccountIDNotRecognisedException("There is no user with this id");
 
 	}
 
@@ -96,10 +96,12 @@ public class SocialMedia implements SocialMediaPlatform {
 
 		// Check account exists
 		if (!checkForHandle(handle))
-			throw HandleNotRecognisedException("A user with that handle doesn't exist");
+			throw new HandleNotRecognisedException("A user with that handle doesn't exist");
 
 		// Remove the account from current accounts
 		currentUsers.remove(handle);
+
+		// TODO: Edit and remove users posts
 
 	}
 
@@ -109,14 +111,14 @@ public class SocialMedia implements SocialMediaPlatform {
 
 		// Check account exsists
 		if (!checkForHandle(oldHandle))
-			throw HandleNotRecognisedException("A user with that handle doesn't exist");
+			throw new HandleNotRecognisedException("A user with that handle doesn't exist");
 
 		// Check the handle
 		newHandle = validateHandle(newHandle);
 
 		// Check this handle doesn't already exist
 		if (checkForHandle(newHandle))
-			throw IllegalHandleException("A user with the new handle already exists");
+			throw new IllegalHandleException("A user with the new handle already exists");
 
 		// Create a copy of the current user
 		User currentUser = currentUsers.get(oldHandle);
@@ -136,7 +138,7 @@ public class SocialMedia implements SocialMediaPlatform {
 
 		// Check account exsists
 		if (!checkForHandle(handle))
-			throw HandleNotRecognisedException("A user with that handle doesn't exist");
+			throw new HandleNotRecognisedException("A user with that handle doesn't exist");
 
 		// Update description
 		currentUsers.get(handle).setDescription(description);
@@ -147,7 +149,7 @@ public class SocialMedia implements SocialMediaPlatform {
 
 		// Check account exsists
 		if (!checkForHandle(handle))
-			throw HandleNotRecognisedException("A user with that handle doesn't exist");
+			throw new HandleNotRecognisedException("A user with that handle doesn't exist");
 
 		return currentUsers.get(handle).toString();
 	}
@@ -157,7 +159,7 @@ public class SocialMedia implements SocialMediaPlatform {
 
 		// Check this handle already exist
 		if (!checkForHandle(handle))
-			throw HandleNotRecognisedException("There is no user with this handle");
+			throw new HandleNotRecognisedException("There is no user with this handle");
 
 		// checks message is valid
 		message = validateMessage(message);
@@ -184,21 +186,30 @@ public class SocialMedia implements SocialMediaPlatform {
 			throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException {
 		// Check this handle already exist
 		if (!checkForHandle(handle))
-			throw HandleNotRecognisedException("There is no user with this handle");
+			throw new HandleNotRecognisedException("There is no user with this handle");
 		// Check this handle already exist
 		if (!checkForId(id))
-			throw PostIDNotRecognisedException("There is no post with this ID");
+			throw new PostIDNotRecognisedException("There is no post with this ID");
 
+		// Get the post we want to endorse
+		Post endorsedPost = posts.get(id);
+
+		if (endorsedPost.isEndorsed())
+			throw new NotActionablePostException("You can't endorse an endorsed post");
+
+		// Set a new id for the endorsed post
 		int postId = idSetter;
 
 		// increment the sequential number
 		idSetter++;
 
-		Post endorsedPost = posts.get(id);
-
-		Post userPost = new Post(handle, postId, "EP@" + endorsedPost.getHandle() + ": " + endorsedPost.getMessage());
+		Post userPost = new Post(handle, postId, "EP@" + endorsedPost.getHandle() + ": " + endorsedPost.getMessage(),
+				true);
 
 		posts.put(postId, userPost);
+
+		endorsedPost.addEndorsment(userPost);
+
 		return postId;
 	}
 
@@ -290,13 +301,13 @@ public class SocialMedia implements SocialMediaPlatform {
 	 */
 	public String validateHandle(String handle) throws InvalidHandleException {
 		if (handle.isEmpty())
-			throw InvalidHandleException("The handle can't be empty");
+			throw new InvalidHandleException("The handle can't be empty");
 
 		if (handle.length() > 30)
-			throw InvalidHandleException("The handle must be 30 characters or less");
+			throw new InvalidHandleException("The handle must be 30 characters or less");
 
 		if (handle.split(" ").length > 1)
-			throw InvalidHandleException("The handle can't contain whitespaces");
+			throw new InvalidHandleException("The handle can't contain whitespaces");
 
 		return handle;
 	}
@@ -320,10 +331,10 @@ public class SocialMedia implements SocialMediaPlatform {
 	 */
 	public String validateMessage(String message) throws InvalidPostException {
 		if (message.isEmpty())
-			throw InvalidPostException("The message can't be empty");
+			throw new InvalidPostException("The message can't be empty");
 
 		if (handle.length() > 100)
-			throw InvalidPostException("The handle must be 100 characters or less");
+			throw new InvalidPostException("The handle must be 100 characters or less");
 
 		return message;
 	}

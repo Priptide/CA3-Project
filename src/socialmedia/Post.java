@@ -1,5 +1,7 @@
 package socialmedia;
 
+import java.util.ArrayList;
+
 public class Post {
     // Variables
     private String handle;
@@ -11,6 +13,8 @@ public class Post {
     private int endorsments;
 
     private bool isEndorsment;
+
+    private List<Post> endorsedPosts;
 
     // Constructors
 
@@ -27,6 +31,7 @@ public class Post {
         this.message = message;
         this.endorsments = 0;
         this.isEndorsment = false;
+        this.endorsedPosts = new ArrayList<>();
     }
 
     /**
@@ -82,12 +87,13 @@ public class Post {
     }
 
     /**
-     * Add endorsments to the post
+     * Add a new endorsment to this post
      * 
-     * @param endorsments Ammount of endorsments to add
+     * @param endorsedPost The new endorsed post
      */
-    public void addEndorsments(int endorsments) {
-        this.endorsments += endorsments;
+    public void addEndorsment(Post endorsedPost) {
+        this.endorsments += 1;
+        this.endorsedPosts.add(endorsedPost);
     }
 
     /**
@@ -98,4 +104,5 @@ public class Post {
     public boolean isEndorsed() {
         return isEndorsment;
     }
+
 }
