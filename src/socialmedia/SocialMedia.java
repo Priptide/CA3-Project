@@ -154,9 +154,11 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	@Override
 	public int createPost(String handle, String message) throws HandleNotRecognisedException, InvalidPostException {
+
 		// Check this handle already exist
 		if (!checkForHandle(handle))
 			throw HandleNotRecognisedException("There is no user with this handle");
+
 		// checks message is valid
 		message = validateMessage(message);
 		// set id as the current sequential number
@@ -172,6 +174,7 @@ public class SocialMedia implements SocialMediaPlatform {
 		posts.put(id, userPost);
 
 		// Add it to the users posts
+		currentUsers.get(handle).addPost(userPost);
 
 		return id;
 	}
