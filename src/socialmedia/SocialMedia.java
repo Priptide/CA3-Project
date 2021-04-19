@@ -20,8 +20,10 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	public SocialMedia() {
 		this.currentUsers = new HashMap<>();
+		this.posts = new HashMap<>();
 
 		currentIndex = 0;
+		idSetter = 0;
 	}
 
 	@Override
@@ -148,15 +150,46 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	@Override
 	public int createPost(String handle, String message) throws HandleNotRecognisedException, InvalidPostException {
-		// TODO Auto-generated method stub
-		return 0;
+		// Check this handle already exist
+		if (!checkForHandle(handle))
+			throw HandleNotRecognisedException("There is no user with this handle");
+		//checks message is valid
+		message = validateMessage(message);
+		//set id as the current sequential number
+		id = idSetter;
+		
+		//increment the sequential number
+		idSetter++;
+		
+		Post userPost = new Post(handle, id, message);
+		
+		posts.put(id, userPost);
+		
+		return id;
 	}
 
 	@Override
 	public int endorsePost(String handle, int id)
 			throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException {
-		// TODO Auto-generated method stub
-		return 0;
+		// Check this handle already exist
+		if (!checkForHandle(handle))
+			throw HandleNotRecognisedException("There is no user with this handle");
+		// Check this handle already exist
+		if (!checkForId(id))
+			throw PostIDNotRecognisedException("There is no post with this ID");
+		
+		postId = idSetter;
+		
+		//increment the sequential number
+		idSetter++;
+		
+		Post endorsedPost = posts.get(id);
+
+
+		Post userPost = new Post(handle, postId, "EP@" + endorsedPost.getHandle() + ": " endorsedPost.getMessage());
+		
+		posts.put(postId, userPost);
+		return postId;
 	}
 
 	@Override
@@ -267,5 +300,30 @@ public class SocialMedia implements SocialMediaPlatform {
 	public boolean checkForHandle(String handle) {
 		return currentUsers.containsKey(handle);
 	}
+	
+	public String validateMessage(String message) throws InvalidPostException {
+		if (message.isEmpty())
+			throw InvalidPostException("The message can't be empty");
+
+		if (handle.length() > 100)
+			throw InvalidPostException("The handle must be 100 characters or less");
+
+		return message;
+	}
+		
+        public String checkForId(int id) throws PostIDNotRecognisedException {
+		Iterator<int, Post> postsMade = posts.entrySet().iterator();
+		while (postsMade.hasNext()) {
+
+			// Get next entry
+			Map.Entry<id, Post> post = (Map.Entry) postsMade.next();
+
+			// If this entry has the id we need then we will remove it and return
+			if (post.getValue().getId == id) {
+				throw PostIDNotRecognisedException("there is no post with this ID")
+				return;
+			}
+		return posts.containsKey(id);
+		}
 
 }
