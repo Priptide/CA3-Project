@@ -18,6 +18,8 @@ public class Post {
 
     private boolean isRemoved;
 
+    private Post originalPost;
+
     // Constructors
 
     /**
@@ -44,13 +46,15 @@ public class Post {
      * @param id           The id of the Post
      * @param message      The Posts Message
      * @param isEndorsment Whether or not the Post is endorsed
+     * @param originalPost The post that this is endorsing
      */
-    public Post(String handle, int id, string message, boolean isEndorsment) {
+    public Post(String handle, int id, string message, boolean isEndorsment, Post originalPost) {
         this.handle = handle;
         this.id = id;
         this.message = message;
         this.endorsments = 0;
         this.isEndorsment = isEndorsment;
+        this.originalPost = originalPost;
         // No need to mark removed or not as well as no need for a list of endorsed
         // posts
     }
@@ -102,6 +106,16 @@ public class Post {
     }
 
     /**
+     * Removes any endorsed posts
+     * 
+     * @param endorsedPost
+     */
+    public void removeEndorsment(Post endorsedPost) {
+        this.endorsments -= 1;
+        this.endorsedPosts.remove(endorsedPost);
+    }
+
+    /**
      * Get whether or not the post is an endorsment
      * 
      * @return True if it's an endorsment post
@@ -128,8 +142,22 @@ public class Post {
         handle = "";
     }
 
+    /**
+     * Gets all the endorsed posts of this current post
+     * 
+     * @return A list of endorsed posts
+     */
     public List<Post> getEndorsedPosts() {
         return endorsedPosts;
+    }
+
+    /**
+     * Gets the original post of this endorsed post
+     * 
+     * @return The original post
+     */
+    public Post getOriginalPost() {
+        return originalPost;
     }
 
 }

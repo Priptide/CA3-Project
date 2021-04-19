@@ -40,7 +40,7 @@ public class SocialMedia implements SocialMediaPlatform {
 			throw new IllegalHandleException("A user with that handle already exists");
 
 		// Now we get the users id as the next index in our hash map
-		id = currentIndex;
+		int id = currentIndex;
 
 		// Update the current index
 		currentIndex++;
@@ -99,11 +99,22 @@ public class SocialMedia implements SocialMediaPlatform {
 		if (!checkForHandle(handle))
 			throw new HandleNotRecognisedException("A user with that handle doesn't exist");
 
+		// Get the user we are removing
+		User removedUser = currentUsers.get(handle);
+
+		// Now we take the users posts and check through them
+		for (Post removingPosts : removedUser.getPosts()) {
+			if (removingPosts.isEndorsed()) {
+				posts.get(removingPosts.getOriginalPost().getId()).removeEndorsment(removingPosts);
+				posts.remove(removingPosts.getId());
+			} else {
+				deletePost(removingPosts.getId());
+			}
+
+		}
+
 		// Remove the account from current accounts
 		currentUsers.remove(handle);
-
-		// TODO: Edit and remove users posts
-
 	}
 
 	@Override
@@ -198,18 +209,29 @@ public class SocialMedia implements SocialMediaPlatform {
 		if (endorsedPost.isEndorsed())
 			throw new NotActionablePostException("You can't endorse an endorsed post");
 
+		// Remove the old unendorsed post
+		currentUsers.get(endorsedPost.getHandle()).removePost(endorsedPost);
+
 		// Set a new id for the endorsed post
 		int postId = idSetter;
 
 		// increment the sequential number
 		idSetter++;
 
+		// Create a new endorsed post
 		Post userPost = new Post(handle, postId, "EP@" + endorsedPost.getHandle() + ": " + endorsedPost.getMessage(),
-				true);
+				true, endorsedPost);
 
 		posts.put(postId, userPost);
 
+		// Add it to the users posts
+		currentUsers.get(handle).addPost(userPost);
+
+		// Add endorsments to the post
 		endorsedPost.addEndorsment(userPost);
+
+		// Update the users list of posts
+		currentUsers.get(endorsedPost.getHandle()).addPost(endorsedPost);
 
 		return postId;
 	}
@@ -233,6 +255,7 @@ public class SocialMedia implements SocialMediaPlatform {
 		// First we remove all the endorsed posts by looping through them
 		for (Post endorsedPost : currentPost.getEndorsedPosts()) {
 			posts.remove(endorsedPost.getId());
+			currentUsers.get(endorsedPost.getHandle()).removePost(endorsedPost);
 		}
 
 		// Now we mark the master post as removed
