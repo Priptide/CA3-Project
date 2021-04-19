@@ -16,6 +16,8 @@ public class Post {
 
     private List<Post> endorsedPosts;
 
+    private boolean isRemoved;
+
     // Constructors
 
     /**
@@ -31,6 +33,7 @@ public class Post {
         this.message = message;
         this.endorsments = 0;
         this.isEndorsment = false;
+        this.isRemoved = false;
         this.endorsedPosts = new ArrayList<>();
     }
 
@@ -48,6 +51,8 @@ public class Post {
         this.message = message;
         this.endorsments = 0;
         this.isEndorsment = isEndorsment;
+        // No need to mark removed or not as well as no need for a list of endorsed
+        // posts
     }
 
     /**
@@ -103,6 +108,28 @@ public class Post {
      */
     public boolean isEndorsed() {
         return isEndorsment;
+    }
+
+    /**
+     * Gets if the post has been removed or not
+     * 
+     * @return True if the post has been removed
+     */
+    public boolean isRemoved() {
+        return isRemoved;
+    }
+
+    /**
+     * No arguments function to remove the post
+     */
+    public void removePost() {
+        isRemoved = true;
+        message = "The original content was removed from the system and is no longer available.";
+        handle = "";
+    }
+
+    public List<Post> getEndorsedPosts() {
+        return endorsedPosts;
     }
 
 }

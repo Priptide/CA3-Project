@@ -2,6 +2,7 @@ package socialmedia;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -187,7 +188,7 @@ public class SocialMedia implements SocialMediaPlatform {
 		// Check this handle already exist
 		if (!checkForHandle(handle))
 			throw new HandleNotRecognisedException("There is no user with this handle");
-		// Check this handle already exist
+		// Check this post id already exist
 		if (!checkForId(id))
 			throw new PostIDNotRecognisedException("There is no post with this ID");
 
@@ -222,7 +223,23 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	@Override
 	public void deletePost(int id) throws PostIDNotRecognisedException {
-		// TODO Auto-generated method stub
+		// Check this post already exist
+		if (!checkForId(id))
+			throw new PostIDNotRecognisedException("There is no post with this ID");
+
+		// Get the post we want to remove
+		Post currentPost = posts.get(id);
+
+		// First we remove all the endorsed posts by looping through them
+		for (Post endorsedPost : currentPost.getEndorsedPosts()) {
+			posts.remove(endorsedPost.getId());
+		}
+
+		// Now we mark the master post as removed
+		currentPost.removePost();
+
+		// And we remove the post from our users post list
+		currentUsers.get(currentPost.getHandle()).removePost(currentPost);
 
 	}
 
@@ -340,13 +357,15 @@ public class SocialMedia implements SocialMediaPlatform {
 	}
 
 	/**
-	 * Checks if a post with a given id exsists
+	 * Checks if a post with a given id exsists and can be interacted with
 	 * 
 	 * @param id
-	 * @return True if there is a post with the given id
+	 * @return True if there is a post with the given id and it hasn't been removed
 	 */
 	public boolean checkForId(int id) {
-		return posts.containsKey(id);
+		if (posts.containsKey(id))
+			return !posts.get(id).isRemoved();
+		return false;
 	}
 
 }
