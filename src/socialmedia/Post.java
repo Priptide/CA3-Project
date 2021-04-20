@@ -1,6 +1,7 @@
 package socialmedia;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Post {
     // Variables
@@ -12,9 +13,13 @@ public class Post {
 
     private int endorsments;
 
+    private int comments;
+
     private bool isEndorsment;
 
     private List<Post> endorsedPosts;
+
+    private List<Post> commentedPosts;
 
     private boolean isRemoved;
 
@@ -37,6 +42,7 @@ public class Post {
         this.isEndorsment = false;
         this.isRemoved = false;
         this.endorsedPosts = new ArrayList<>();
+        this.commentedPosts = new ArrayList<>();
     }
 
     /**
@@ -55,8 +61,8 @@ public class Post {
         this.endorsments = 0;
         this.isEndorsment = isEndorsment;
         this.originalPost = originalPost;
-        // No need to mark removed or not as well as no need for a list of endorsed
-        // posts
+        this.endorsedPosts = new ArrayList<>();
+        this.commentedPosts = new ArrayList<>();
     }
 
     /**
@@ -75,6 +81,15 @@ public class Post {
      */
     public String getHandle() {
         return handle;
+    }
+
+    /**
+     * Update the posts user's handle
+     * 
+     * @param newHandle New User Handle
+     */
+    public void setHandle(String newHandle) {
+        this.handle = newHandle;
     }
 
     /**
@@ -140,6 +155,11 @@ public class Post {
         isRemoved = true;
         message = "The original content was removed from the system and is no longer available.";
         handle = "";
+    }
+
+    public void addComment(Post commentPost) {
+        commentedPosts.add(commentPost);
+        comments += 1;
     }
 
     /**

@@ -9,14 +9,15 @@ import java.util.Map;
  * SocialMedia is a compiling, functioning implementor of the
  * SocialMediaPlatform interface.
  * 
- * @author Diogo Pacheco
+ * @author Charlie Crooke & Owen Redstone
  * @version 1.0
  */
 public class SocialMedia implements SocialMediaPlatform {
 
-	// Create an empty hashmap for our users
+	// Create a map for our users
 	private Map<String, User> currentUsers;
 
+	// Create a map for our posts
 	private Map<Integer, Post> posts;
 
 	private int currentIndex;
@@ -138,6 +139,19 @@ public class SocialMedia implements SocialMediaPlatform {
 		// Update the users handle
 		currentUser.setHandle(newHandle);
 
+		// Update all the users posts handles
+		for (Post updatingPosts : currentUser.getPosts()) {
+			// Remove old post from user collection
+			currentUser.removePost(updatingPosts);
+
+			// Update post handles
+			posts.get(updatingPosts.getId()).setHandle(newHandle);
+			updatingPosts.setHandle(newHandle);
+
+			// Add updated post to the user
+			currentUser.addPost(updatingPosts);
+		}
+
 		// Create a new mapping for that user with their new handle
 		currentUsers.put(newHandle, currentUser);
 
@@ -203,6 +217,8 @@ public class SocialMedia implements SocialMediaPlatform {
 		if (!checkForId(id))
 			throw new PostIDNotRecognisedException("There is no post with this ID");
 
+		// TODO: Make sure to truncate messages that end up over 100 chars
+
 		// Get the post we want to endorse
 		Post endorsedPost = posts.get(id);
 
@@ -239,31 +255,40 @@ public class SocialMedia implements SocialMediaPlatform {
 	@Override
 	public int commentPost(String handle, int id, String message) throws HandleNotRecognisedException,
 			PostIDNotRecognisedException, NotActionablePostException, InvalidPostException {
+
+		// Validate our message is valid
+		message = validateMessage(message);
+
+		// Check for the user and post exsistsing
 		if (!checkForHandle(handle))
 			throw HandleNotRecognisedException("There is no user with this handle");
-		
 		if (!checkForId(id))
 			throw new PostIDNotRecognisedException("There is no post with this ID");
-		
+
+		// Get the post we want to check
 		Post commentedPost = posts.get(id);
 
+		// Check the post isn't endorsed
 		if (commentedPost.isEndorsed())
 			throw new NotActionablePostException("You can't comment on an endorsed post");
-		
-		currentUsers.get(coomentedPost.getHandle()).removePost(commentedPost);
-		
-		message = validateMessage(message);
-		
+
+		// Remove the old comemented post
+		currentUsers.get(commentedPost.getHandle()).removePost(commentedPost);
+
 		int postId = idSetter;
-		
+
 		idSetter++;
-		
-		Post comment = new Post(handle, postId, "comment@" + commentedPostPost.getHandle() + ": " + message,
-				false, commentedPost);
-				
-	        // Add it to the users posts 
+
+		// Create a new
+		Post comment = new Post(handle, postId, "comment@" + commentedPostPost.getHandle() + ": " + message, false,
+				commentedPost);
+
+		// Add it to the users posts
 		currentUsers.get(handle).addPost(comment);
-		
+
+		posts.put(postId, comment);
+
+		//
 		commentedPost.addComment(comment);
 
 		// Update the users list of posts
