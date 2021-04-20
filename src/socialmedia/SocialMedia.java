@@ -239,8 +239,37 @@ public class SocialMedia implements SocialMediaPlatform {
 	@Override
 	public int commentPost(String handle, int id, String message) throws HandleNotRecognisedException,
 			PostIDNotRecognisedException, NotActionablePostException, InvalidPostException {
-		// TODO Auto-generated method stub
-		return 0;
+		if (!checkForHandle(handle))
+			throw HandleNotRecognisedException("There is no user with this handle");
+		
+		if (!checkForId(id))
+			throw new PostIDNotRecognisedException("There is no post with this ID");
+		
+		Post commentedPost = posts.get(id);
+
+		if (commentedPost.isEndorsed())
+			throw new NotActionablePostException("You can't comment on an endorsed post");
+		
+		currentUsers.get(coomentedPost.getHandle()).removePost(commentedPost);
+		
+		message = validateMessage(message);
+		
+		int postId = idSetter;
+		
+		idSetter++;
+		
+		Post comment = new Post(handle, postId, "comment@" + commentedPostPost.getHandle() + ": " + message,
+				false, commentedPost);
+				
+	        // Add it to the users posts 
+		currentUsers.get(handle).addPost(comment);
+		
+		commentedPost.addComment(comment);
+
+		// Update the users list of posts
+		currentUsers.get(commentedPost.getHandle()).addPost(commentedPost);
+
+		return postId;
 	}
 
 	@Override
