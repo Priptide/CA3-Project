@@ -143,9 +143,33 @@ public class User {
         posts.remove(oldPostID);
     }
 
+    /**
+     * Gets the users total endorsments
+     * 
+     * @return Total endorsments
+     */
+    public int getTotalEndorsments() {
+        int total = 0;
+        for (Post p : getPosts()) {
+            total += p.getEndorsments();
+        }
+        return total;
+    }
+
+    /**
+     * Returns the user as a string in the display
+     * 
+     * <pre>
+     * ID: [account ID]
+     * Handle: [account handle]
+     * Description: [account description]
+     * Post count: [total number of posts, including endorsements and replies]
+     * Endorse count: [sum of endorsements received by each post of this account]
+     * </pre>
+     */
     public String toString() {
-        // TODO: Add posts and endorsments
-        return "ID: " + id + "\nHandle: " + handle + "\nDescription: " + description + "\nPosts: \nEndorsments: ";
+        return "ID: " + id + "\n Handle: " + handle + "\n Description: " + description + "\n Post count: "
+                + posts.size() + "\n Endorse count: " + getTotalEndorsments();
     }
 
 }

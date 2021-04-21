@@ -81,7 +81,32 @@ public class SocialMedia implements SocialMediaPlatform {
 
 			// If this entry has the id we need then we will remove it and return
 			if (user.getValue().getId() == id) {
-				currentUsers.remove(user.getKey());
+
+				String handle = user.getKey();
+				// Get the user we are removing
+				User removedUser = currentUsers.get(handle);
+
+				// Now we take the users posts and check through them
+				for (Post removingPosts : removedUser.getPosts()) {
+					if (removingPosts.isEndorsed()) {
+						posts.get(removingPosts.getOriginalPost().getId()).removeEndorsment(removingPosts);
+						posts.remove(removingPosts.getId());
+					} else {
+						try {
+							deletePost(removingPosts.getId());
+						} catch (Exception e) {
+
+							// Using this to keep compiler happy but this show never cause an error
+							System.out.println("Error, posts unsynced!");
+
+						}
+					}
+
+				}
+
+				// Remove the account from current accounts
+				currentUsers.remove(handle);
+
 				return;
 			}
 		}
@@ -406,7 +431,8 @@ public class SocialMedia implements SocialMediaPlatform {
 			// Get next post
 			Map.Entry<Integer, Post> user = postsCurrent.next();
 
-			if (user.getValue().getOriginalPost() == null && user.getValue().getHandle() != "") {
+			// Check the post is an original and not deleted
+			if (user.getValue().getOriginalPost() == null && !user.getValue().getHandle().equals("")) {
 				originalPosts++;
 			}
 		}
@@ -415,32 +441,115 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	@Override
 	public int getTotalEndorsmentPosts() {
-		// TODO Auto-generated method stub
-		return 0;
+		// Loop through all the posts currently in the system
+		Iterator<Map.Entry<Integer, Post>> postsCurrent = posts.entrySet().iterator();
+		int endorsedPosts = 0;
+		while (postsCurrent.hasNext()) {
+
+			// Get next post
+			Map.Entry<Integer, Post> user = postsCurrent.next();
+
+			// Check the post is endorsed and not deleted
+			if (user.getValue().isEndorsed() && !user.getValue().getHandle().equals("")) {
+				endorsedPosts++;
+			}
+		}
+		return endorsedPosts;
 	}
 
 	@Override
 	public int getTotalCommentPosts() {
-		// TODO Auto-generated method stub
-		return 0;
+		// Loop through all the posts currently in the system
+		Iterator<Map.Entry<Integer, Post>> postsCurrent = posts.entrySet().iterator();
+		int commentPosts = 0;
+		while (postsCurrent.hasNext()) {
+
+			// Get next post
+			Map.Entry<Integer, Post> user = postsCurrent.next();
+
+			// Check the post isn't endorsed is a comment and not deleted
+			if (!user.getValue().isEndorsed() && user.getValue().getOriginalPost() != null
+					&& !user.getValue().getHandle().equals("")) {
+				commentPosts++;
+			}
+		}
+		return commentPosts;
 	}
 
 	@Override
 	public int getMostEndorsedPost() {
-		// TODO Auto-generated method stub
-		return 0;
+		// Loop through all the posts currently in the system
+		Iterator<Map.Entry<Integer, Post>> postsCurrent = posts.entrySet().iterator();
+		Post topEndorsment = null;
+		// We set an int to save computation later when checking against this value
+		int topValue = 0;
+		while (postsCurrent.hasNext()) {
+			// Get next post
+			Map.Entry<Integer, Post> user = postsCurrent.next();
+
+			Post check = user.getValue();
+			// If there is no top post place this one there
+			if (topEndorsment == null) {
+				topEndorsment = check;
+				topValue = check.getEndorsments();
+			} else {
+				// We check only greater so we can't have a tie
+				if (user.getValue().getEndorsments() > topValue) {
+					topEndorsment = check;
+					topValue = check.getEndorsments();
+				}
+			}
+		}
+
+		// Here we avoid a null exception
+		if (topEndorsment != null) {
+			return topEndorsment.getId();
+		} else {
+			return 0;
+		}
 	}
 
 	@Override
 	public int getMostEndorsedAccount() {
-		// TODO Auto-generated method stub
-		return 0;
+
+		// Loop through all the posts currently in the system
+		Iterator<Map.Entry<String, User>> usersCurrent = currentUsers.entrySet().iterator();
+		User topEndorsment = null;
+		// We set an int to save computation later when checking against this value
+		int topValue = 0;
+		while (usersCurrent.hasNext()) {
+			// Get next post
+			Map.Entry<String, User> user = usersCurrent.next();
+
+			User check = user.getValue();
+			// If there is no top post place this one there
+			if (topEndorsment == null) {
+				topEndorsment = check;
+				topValue = check.getTotalEndorsments();
+			} else {
+				// We check only greater so we can't have a tie
+				if (user.getValue().getTotalEndorsments() > topValue) {
+					topEndorsment = check;
+					topValue = check.getTotalEndorsments();
+				}
+			}
+		}
+
+		// Here we avoid a null exception
+		if (topEndorsment != null) {
+			return topEndorsment.getId();
+		} else {
+			return 0;
+		}
 	}
 
 	@Override
 	public void erasePlatform() {
-		// TODO Auto-generated method stub
+		this.currentUsers = new HashMap<>();
+		this.posts = new HashMap<>();
 
+		currentIndex = 0;
+		idSetter = 0;
 	}
 
 	@Override
