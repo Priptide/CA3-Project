@@ -15,7 +15,7 @@ public class Post {
 
     private int comments;
 
-    private bool isEndorsment;
+    private boolean isEndorsment;
 
     private List<Post> endorsedPosts;
 
@@ -34,7 +34,7 @@ public class Post {
      * @param id      The id of the Post
      * @param message The Posts Message
      */
-    public Post(String handle, int id, string message) {
+    public Post(String handle, int id, String message) {
         this.handle = handle;
         this.id = id;
         this.message = message;
@@ -54,7 +54,7 @@ public class Post {
      * @param isEndorsment Whether or not the Post is endorsed
      * @param originalPost The post that this is endorsing
      */
-    public Post(String handle, int id, string message, boolean isEndorsment, Post originalPost) {
+    public Post(String handle, int id, String message, boolean isEndorsment, Post originalPost) {
         this.handle = handle;
         this.id = id;
         this.message = message;
@@ -157,9 +157,32 @@ public class Post {
         handle = "";
     }
 
+    /**
+     * Add a comment to the selected post
+     * 
+     * @param commentPost The new post which you have comented on
+     */
     public void addComment(Post commentPost) {
         commentedPosts.add(commentPost);
         comments += 1;
+    }
+
+    /**
+     * Gives a list of comment ids so that we don't need to continually update the
+     * posts here
+     * 
+     * @return List of Commented Posts IDs
+     */
+    public List<Integer> getCommentIds() {
+        List<Integer> commentIds = new ArrayList<>();
+        for (Post p : commentedPosts) {
+            commentIds.add(p.getId());
+        }
+        return commentIds;
+    }
+
+    public int getTotalComments() {
+        return comments;
     }
 
     /**

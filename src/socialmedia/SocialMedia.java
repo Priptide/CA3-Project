@@ -2,6 +2,7 @@ package socialmedia;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -72,20 +73,17 @@ public class SocialMedia implements SocialMediaPlatform {
 	@Override
 	public void removeAccount(int id) throws AccountIDNotRecognisedException {
 		// For this we will iterate through all accounts and check their id
-		Iterator<String, User> accounts = currentUsers.entrySet().iterator();
+		Iterator<Map.Entry<String, User>> accounts = currentUsers.entrySet().iterator();
 		while (accounts.hasNext()) {
 
 			// Get next entry
-			Map.Entry<String, User> user = (Map.Entry) accounts.next();
+			Map.Entry<String, User> user = accounts.next();
 
 			// If this entry has the id we need then we will remove it and return
-			if (user.getValue().getId == id) {
+			if (user.getValue().getId() == id) {
 				currentUsers.remove(user.getKey());
 				return;
 			}
-
-			// This line helps avoid a ConcurrentModificationException
-			accounts.remove();
 		}
 
 		// If we find no users then we will throw an error
@@ -109,7 +107,14 @@ public class SocialMedia implements SocialMediaPlatform {
 				posts.get(removingPosts.getOriginalPost().getId()).removeEndorsment(removingPosts);
 				posts.remove(removingPosts.getId());
 			} else {
-				deletePost(removingPosts.getId());
+				try {
+					deletePost(removingPosts.getId());
+				} catch (Exception e) {
+
+					// Using this to keep compiler happy but this show never cause an error
+					System.out.println("Error, posts unsynced!");
+
+				}
 			}
 
 		}
@@ -141,9 +146,6 @@ public class SocialMedia implements SocialMediaPlatform {
 
 		// Update all the users posts handles
 		for (Post updatingPosts : currentUser.getPosts()) {
-			// Remove old post from user collection
-			currentUser.removePost(updatingPosts);
-
 			// Update post handles
 			posts.get(updatingPosts.getId()).setHandle(newHandle);
 			updatingPosts.setHandle(newHandle);
@@ -214,10 +216,8 @@ public class SocialMedia implements SocialMediaPlatform {
 		if (!checkForHandle(handle))
 			throw new HandleNotRecognisedException("There is no user with this handle");
 		// Check this post id already exist
-		if (!checkForId(id))
+		if (!checkForId(id, false))
 			throw new PostIDNotRecognisedException("There is no post with this ID");
-
-		// TODO: Make sure to truncate messages that end up over 100 chars
 
 		// Get the post we want to endorse
 		Post endorsedPost = posts.get(id);
@@ -225,18 +225,18 @@ public class SocialMedia implements SocialMediaPlatform {
 		if (endorsedPost.isEndorsed())
 			throw new NotActionablePostException("You can't endorse an endorsed post");
 
-		// Remove the old unendorsed post
-		currentUsers.get(endorsedPost.getHandle()).removePost(endorsedPost);
-
 		// Set a new id for the endorsed post
 		int postId = idSetter;
 
 		// increment the sequential number
 		idSetter++;
 
+		// Here we make sure to truncate the string if it is too long
+		String endorsedMessage = "EP@" + endorsedPost.getHandle() + ": " + endorsedPost.getMessage();
+		endorsedMessage = endorsedMessage.substring(0, Math.min(endorsedMessage.length(), 99));
+
 		// Create a new endorsed post
-		Post userPost = new Post(handle, postId, "EP@" + endorsedPost.getHandle() + ": " + endorsedPost.getMessage(),
-				true, endorsedPost);
+		Post userPost = new Post(handle, postId, endorsedMessage, true, endorsedPost);
 
 		posts.put(postId, userPost);
 
@@ -261,8 +261,8 @@ public class SocialMedia implements SocialMediaPlatform {
 
 		// Check for the user and post exsistsing
 		if (!checkForHandle(handle))
-			throw HandleNotRecognisedException("There is no user with this handle");
-		if (!checkForId(id))
+			throw new HandleNotRecognisedException("There is no user with this handle");
+		if (!checkForId(id, false))
 			throw new PostIDNotRecognisedException("There is no post with this ID");
 
 		// Get the post we want to check
@@ -272,23 +272,20 @@ public class SocialMedia implements SocialMediaPlatform {
 		if (commentedPost.isEndorsed())
 			throw new NotActionablePostException("You can't comment on an endorsed post");
 
-		// Remove the old comemented post
-		currentUsers.get(commentedPost.getHandle()).removePost(commentedPost);
-
 		int postId = idSetter;
 
 		idSetter++;
 
 		// Create a new
-		Post comment = new Post(handle, postId, "comment@" + commentedPostPost.getHandle() + ": " + message, false,
-				commentedPost);
+		Post comment = new Post(handle, postId, message, false, commentedPost);
 
 		// Add it to the users posts
 		currentUsers.get(handle).addPost(comment);
 
+		// Add to our current posts this comment
 		posts.put(postId, comment);
 
-		//
+		// Add comment too the main post
 		commentedPost.addComment(comment);
 
 		// Update the users list of posts
@@ -300,7 +297,7 @@ public class SocialMedia implements SocialMediaPlatform {
 	@Override
 	public void deletePost(int id) throws PostIDNotRecognisedException {
 		// Check this post already exist
-		if (!checkForId(id))
+		if (!checkForId(id, false))
 			throw new PostIDNotRecognisedException("There is no post with this ID");
 
 		// Get the post we want to remove
@@ -309,28 +306,89 @@ public class SocialMedia implements SocialMediaPlatform {
 		// First we remove all the endorsed posts by looping through them
 		for (Post endorsedPost : currentPost.getEndorsedPosts()) {
 			posts.remove(endorsedPost.getId());
-			currentUsers.get(endorsedPost.getHandle()).removePost(endorsedPost);
+			currentUsers.get(endorsedPost.getHandle()).removePost(endorsedPost.getId());
 		}
+
+		// And we remove the post from our users post list
+		currentUsers.get(currentPost.getHandle()).removePost(currentPost.getId());
 
 		// Now we mark the master post as removed
 		currentPost.removePost();
-
-		// And we remove the post from our users post list
-		currentUsers.get(currentPost.getHandle()).removePost(currentPost);
 
 	}
 
 	@Override
 	public String showIndividualPost(int id) throws PostIDNotRecognisedException {
-		// TODO Auto-generated method stub
-		return null;
+		// Check this post already exist
+		if (!checkForId(id, true))
+			throw new PostIDNotRecognisedException("There is no post with this ID");
+
+		// Get the post we want to show
+		Post currentPost = posts.get(id);
+
+		String handle;
+
+		// Replace the handle if the user or post was removed
+		if (currentPost.getHandle().equals(""))
+			handle = "<removed>";
+		else
+			handle = currentPost.getHandle();
+
+		return "ID: " + id + "\n  Account: " + handle + "\n  No. endorsments: " + currentPost.getEndorsments()
+				+ " | No. Comments: " + currentPost.getTotalComments() + "\n  " + currentPost.getMessage();
 	}
 
 	@Override
 	public StringBuilder showPostChildrenDetails(int id)
 			throws PostIDNotRecognisedException, NotActionablePostException {
-		// TODO Auto-generated method stub
-		return null;
+
+		// Check post exsist
+		if (!checkForId(id, true))
+			throw new PostIDNotRecognisedException("There is no post with this ID");
+		// Get the post we want to check
+		Post commentedPost = posts.get(id);
+
+		// Check the post isn't endorsed
+		if (commentedPost.isEndorsed())
+			throw new NotActionablePostException("An endorsed post has no children");
+
+		// We use this for adding new indents
+		final String remove = "\n  ";
+
+		// Create a new string builder
+		StringBuilder outputBuilder = new StringBuilder();
+
+		// Add the first post
+		outputBuilder.append(showIndividualPost(id));
+
+		// We only add the next line if we have any comments below
+		if (posts.get(id).getTotalComments() > 0) {
+			outputBuilder.append("\n  |");
+		}
+
+		// Loop through the posts comments
+		for (int currentId : posts.get(id).getCommentIds()) {
+			// Find the comment as a string
+			String localComment = showIndividualPost(currentId);
+
+			// Add more new lines too the comment
+			localComment = localComment.replace(remove, "\n" + ("    ".repeat(2)));
+			outputBuilder.append("\n  | > " + localComment);
+
+			// Check if we have any comments on the post
+			if (posts.get(currentId).getTotalComments() > 0) {
+				// Loop through these comments in a new string builder
+				StringBuilder commentBuilder = new StringBuilder();
+				for (int commentID : posts.get(currentId).getCommentIds()) {
+					commentBuilder.append("\n|\n| > " + showPostChildrenDetails(commentID));
+				}
+				String comments = commentBuilder.toString().replace(remove, "\n" + ("       ".repeat(2)));
+				comments = comments.replace("\n|", "\n" + ("    ".repeat(2)) + "|");
+				outputBuilder.append(comments);
+
+			}
+		}
+		return outputBuilder;
 	}
 
 	@Override
@@ -340,8 +398,19 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	@Override
 	public int getTotalOriginalPosts() {
-		// TODO Auto-generated method stub
-		return 0;
+		// Loop through all the posts currently in the system
+		Iterator<Map.Entry<Integer, Post>> postsCurrent = posts.entrySet().iterator();
+		int originalPosts = 0;
+		while (postsCurrent.hasNext()) {
+
+			// Get next post
+			Map.Entry<Integer, Post> user = postsCurrent.next();
+
+			if (user.getValue().getOriginalPost() == null && user.getValue().getHandle() != "") {
+				originalPosts++;
+			}
+		}
+		return originalPosts;
 	}
 
 	@Override
@@ -427,19 +496,25 @@ public class SocialMedia implements SocialMediaPlatform {
 		if (message.isEmpty())
 			throw new InvalidPostException("The message can't be empty");
 
-		if (handle.length() > 100)
-			throw new InvalidPostException("The handle must be 100 characters or less");
+		if (message.length() > 100)
+			throw new InvalidPostException("The message must be 100 characters or less");
 
 		return message;
 	}
 
 	/**
-	 * Checks if a post with a given id exsists and can be interacted with
+	 * Checks if a post with a given id exsists
 	 * 
-	 * @param id
-	 * @return True if there is a post with the given id and it hasn't been removed
+	 * @param id           The posts id
+	 * @param canBeDeleted Check for posts that have been deleted
+	 * 
+	 * @return True if there is a post with the given id and `it hasn't been removed
 	 */
-	public boolean checkForId(int id) {
+	public boolean checkForId(int id, boolean canBeDeleted) {
+
+		if (canBeDeleted)
+			return posts.containsKey(id);
+
 		if (posts.containsKey(id))
 			return !posts.get(id).isRemoved();
 		return false;

@@ -1,5 +1,5 @@
 import socialmedia.AccountIDNotRecognisedException;
-import socialmedia.BadSocialMedia;
+import socialmedia.SocialMedia;
 import socialmedia.IllegalHandleException;
 import socialmedia.InvalidHandleException;
 import socialmedia.SocialMediaPlatform;
@@ -24,7 +24,7 @@ public class SocialMediaPlatformTestApp {
 	public static void main(String[] args) {
 		System.out.println("The system compiled and started the execution...");
 
-		SocialMediaPlatform platform = new BadSocialMedia();
+		SocialMediaPlatform platform = new SocialMedia();
 
 		assert (platform.getNumberOfAccounts() == 0) : "Innitial SocialMediaPlatform not empty as required.";
 		assert (platform.getTotalOriginalPosts() == 0) : "Innitial SocialMediaPlatform not empty as required.";
@@ -45,6 +45,28 @@ public class SocialMediaPlatformTestApp {
 			assert (false) : "InvalidHandleException thrown incorrectly";
 		} catch (AccountIDNotRecognisedException e) {
 			assert (false) : "AccountIDNotRecognizedException thrown incorrectly";
+		}
+
+		try {
+			id = platform.createAccount("myPerson");
+
+			int id1 = platform.createAccount("yourPerson");
+
+			int postId = platform.createPost("myPerson", "This is a good post");
+
+			int commentId = platform.commentPost("yourPerson", postId, "No it isn't");
+
+			commentId = platform.commentPost("myPerson", commentId, "No it is");
+
+			commentId = platform.commentPost("yourPerson", commentId, "No it isn't");
+
+			commentId = platform.commentPost("myPerson", postId, "This is silly");
+
+			commentId = platform.commentPost("yourPerson", commentId, "You're silly");
+
+		} catch (Exception e) {
+			System.out.println(e.toString());
+
 		}
 
 	}

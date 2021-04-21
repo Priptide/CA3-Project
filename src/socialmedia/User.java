@@ -1,6 +1,9 @@
 package socialmedia;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class User {
     // Variables
@@ -10,7 +13,7 @@ public class User {
 
     private String description;
 
-    private List<Post> posts;
+    private Map<Integer, Post> posts;
 
     // Constructors
 
@@ -24,7 +27,7 @@ public class User {
         this.handle = handle;
         this.id = id;
         this.description = "";
-        this.posts = new ArrayList<>();
+        this.posts = new HashMap<>();
     }
 
     /**
@@ -38,7 +41,7 @@ public class User {
         this.handle = handle;
         this.id = id;
         this.description = description;
-        this.posts = new ArrayList<>();
+        this.posts = new HashMap<>();
     }
 
     /**
@@ -101,34 +104,43 @@ public class User {
      * @return Posts in a list
      */
     public List<Post> getPosts() {
-        return this.posts;
+        // Create an empty list for the posts
+        List<Post> currentPosts = new ArrayList<>();
+
+        // Loop through the map
+        for (Map.Entry<Integer, Post> currentSet : posts.entrySet()) {
+            currentPosts.add(currentSet.getValue());
+        }
+
+        return currentPosts;
     }
 
     /**
-     * Sets the users posts as a list of posts
+     * Sets the users posts as a map of posts and ids
      * 
-     * @param posts
+     * @param posts A hashmap of posts
      */
-    public void setPosts(List<Post> posts) {
+    public void setPosts(Map<Integer, Post> posts) {
         this.posts = posts;
     }
 
     /**
-     * Adds a new post to the users collection of posts
+     * Adds a new post to the users collection of posts can also be used to update a
+     * post
      * 
-     * @param newPost
+     * @param newPost The post to add/update
      */
     public void addPost(Post newPost) {
-        posts.add(newPost);
+        posts.put(newPost.getId(), newPost);
     }
 
     /**
      * Remove a post by the user, this post must still exsist
      * 
-     * @param oldPost
+     * @param oldPostID The id of the old post
      */
-    public void removePost(Post oldPost) {
-        posts.remove(oldPost);
+    public void removePost(int oldPostID) {
+        posts.remove(oldPostID);
     }
 
     public String toString() {
