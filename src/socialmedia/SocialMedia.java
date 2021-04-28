@@ -1,6 +1,7 @@
 package socialmedia;
 
 import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -560,7 +561,15 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	@Override
 	public void loadPlatform(String filename) throws IOException, ClassNotFoundException {
-		// TODO Auto-generated method stub
+		try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename +".ser"))) {
+		    Iterator<Map.Entry<String, User>> accounts = currentUsers.entrySet().iterator();
+		    while (accounts.hasNext()) {
+			    // Get next entry
+			    Map.Entry<String, User> user = accounts.next();
+				out.writeObject(user.getValue());
+
+	}
+	}
 
 	}
 
