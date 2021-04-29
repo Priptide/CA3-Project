@@ -1,11 +1,20 @@
 package socialmedia;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class User {
+/**
+ * User is a class that contains all the functionality of a User within the
+ * socialmedia system. This also contains their posts and all the user
+ * information
+ * 
+ * @author Charlie Crooke & Owen Redstone
+ * @version 1.0
+ */
+public class User implements Serializable {
     // Variables
     private String handle;
 

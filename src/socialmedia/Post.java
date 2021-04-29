@@ -1,9 +1,19 @@
 package socialmedia;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Post {
+/**
+ * 
+ * Posts is an object which can contain a post, comment or endorsed post. This
+ * will also contain any information or statistics about the post.
+ * 
+ * @author Charlie Crooke & Owen Redstone
+ * @version 1.0
+ */
+public class Post implements Serializable {
+
     // Variables
     private String handle;
 

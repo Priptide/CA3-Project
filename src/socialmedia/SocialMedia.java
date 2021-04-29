@@ -2,19 +2,19 @@ package socialmedia;
 
 import java.io.IOException;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 /**
  * SocialMedia is a compiling, functioning implementor of the
- * SocialMediaPlatform interface.
+ * SocialMediaPlatform interface. It contains all needed functionality for a
+ * social media platform
  * 
  * @author Charlie Crooke & Owen Redstone
  * @version 1.0
  */
-public class SocialMedia implements SocialMediaPlatform {
+public class SocialMedia implements SocialMediaPlatform, Serializable {
 
 	// Create a map for our users
 	private Map<String, User> currentUsers;
@@ -26,12 +26,51 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	private int idSetter;
 
+	/**
+	 * The constructor for a social media class
+	 */
 	public SocialMedia() {
 		this.currentUsers = new HashMap<>();
 		this.posts = new HashMap<>();
 
 		currentIndex = 0;
 		idSetter = 0;
+	}
+
+	/**
+	 * Gets the current users in given social media platform
+	 * 
+	 * @return Map of all users indexed by their handle
+	 */
+	public Map<String, User> getUsers() {
+		return currentUsers;
+	}
+
+	/**
+	 * Gets all posts in given social media platform
+	 * 
+	 * @return Map of all posts indexed by their id
+	 */
+	public Map<Integer, Post> getPosts() {
+		return posts;
+	}
+
+	/**
+	 * Gives the current next index for users in the platform
+	 * 
+	 * @return Next avaliable account ID
+	 */
+	public int getCurrentIndex() {
+		return currentIndex;
+	}
+
+	/**
+	 * Gives the current next index for a post on the platform
+	 * 
+	 * @return Next avaliable post ID
+	 */
+	public int getIdSetter() {
+		return idSetter;
 	}
 
 	@Override
@@ -546,30 +585,55 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	@Override
 	public void erasePlatform() {
+
+		// We reset the current users and posts
 		this.currentUsers = new HashMap<>();
 		this.posts = new HashMap<>();
 
+		// Also resetting out index
 		currentIndex = 0;
 		idSetter = 0;
 	}
 
 	@Override
 	public void savePlatform(String filename) throws IOException {
-		// TODO Auto-generated method stub
 
+		// Open a new output stream and attempt to write our socialmedia platform to
+		// this file
+		try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename + ".ser"))) {
+
+			// Simply write this object out as both Post and User along with SocialMedia are
+			// serialisable.
+			out.writeObject(this);
+		}
 	}
 
 	@Override
 	public void loadPlatform(String filename) throws IOException, ClassNotFoundException {
-		try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename +".ser"))) {
-		    Iterator<Map.Entry<String, User>> accounts = currentUsers.entrySet().iterator();
-		    while (accounts.hasNext()) {
-			    // Get next entry
-			    Map.Entry<String, User> user = accounts.next();
-				out.writeObject(user.getValue());
 
-	}
-	}
+		// Open an input file stream for reading in the file
+		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename + ".ser"))) {
+
+			// Read in the first (and hopefully only) object in the file
+			Object obj = in.readObject();
+
+			// Check we can safely downcast
+			if (obj instanceof SocialMedia) {
+				// Read the object too a socialmedia object
+				SocialMedia scRead = (SocialMedia) obj;
+
+				// Read all the parameters off this object and write too our own data.
+				this.currentUsers = scRead.getUsers();
+				this.posts = scRead.getPosts();
+				this.currentIndex = scRead.getCurrentIndex();
+				this.idSetter = scRead.getIdSetter();
+
+			} else {
+
+				// If this isn't a socialmedia class this isn't a file we saved.
+				throw new ClassNotFoundException("The selected file isn't saved from this platform");
+			}
+		}
 
 	}
 
